@@ -7,5 +7,16 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="already_registered">Already Registered</string>
     <string name="not_registered">Not Registered</string>
-    <string name="tutaj_strona_menu">Tutaj strona menu</string>
+    <string name="send">Send</string>
+    <string name="collect">Collect</string>
+    <string name="send_message_n">0</string>
+    <string name="rec_n">0</string>
+    <string name="last_sent">Last sent</string>
+    <string name="last_sent_n">0</string>
+    <string name="sent_messages_count">Sent messages count</string>
+    <string name="received_messaged_count">Received messages count</string>
+    <string name="sent_message">Wysłano wiadomość</string>
+    <string name="log_out">Log out</string>
+    <string name="you_done">If you are done,</string>
+    <string name="logout_here">Log out here</string>
 </resources>
