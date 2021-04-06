@@ -87,7 +87,9 @@
         android:layout_height="80dp"
         android:layout_marginTop="40dp"
         android:text="@string/collect"
-        app:backgroundTint="#673AB7" />
+        app:backgroundTint="#673AB7"
+
+    />
 
     <Button
         android:id="@+id/send"
