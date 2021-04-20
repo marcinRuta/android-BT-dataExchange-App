@@ -169,7 +169,19 @@ public class HomeActivity extends AppCompatActivity {
 
     public void btnDiscover() {
         Log.d(TAG, "btnDiscover: Looking for unpaired devices.");
-        if(!mBluetoothAdapter.isDiscovering()){
+
+              if(!mBluetoothAdapter.isDiscovering()){
+                  Log.d(TAG, "btnDiscover: sprawdzamy");
+            //check BT permissions in manifest
+            checkBTPermissions();
+
+            mBluetoothAdapter.startDiscovery();
+            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+        }
+        if(mBluetoothAdapter.isDiscovering()){
+            mBluetoothAdapter.cancelDiscovery();
+            Log.d(TAG, "btnDiscover: Canceling discovery.");
 
             //check BT permissions in manifest
             checkBTPermissions();
@@ -183,17 +195,23 @@ public class HomeActivity extends AppCompatActivity {
     public void Connect(){
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
 
+            mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
 
             for (int i = 0; i<mBTDevices.size(); i++){
                 Log.d(TAG, "Trying to pair with ");
                 mBTDevices.get(i).createBond();
 
                 mBTDevice = mBTDevices.get(i);
-                startBTConnection(mBTDevice,MY_UUID_INSECURE);
-            mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
+
+                startBTConnection(mBTDevices.get(i),MY_UUID_INSECURE);
+
+
         }
         }
     }
+
+   // ArrayList<BluetoothDevice> odkryteTelefony = new ArrayList<>();
+
 
 
     @Override
@@ -208,6 +226,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Button btnCollect = (Button) findViewById(R.id.collect);
+        Button btnDebug = (Button) findViewById(R.id.debug);
 
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,8 +234,21 @@ public class HomeActivity extends AppCompatActivity {
                 enableBT();
                 btnEnableDisable_Discoverable();
                 btnDiscover();
+               // Connect();
+
+            }
+
+        });
+
+        btnDebug.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Connect();
+
             }
         });
+
     }
 
 }
