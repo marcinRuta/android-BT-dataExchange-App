@@ -227,6 +227,8 @@ public class HomeActivity extends AppCompatActivity {
 
         Button btnCollect = (Button) findViewById(R.id.collect);
         Button btnDebug = (Button) findViewById(R.id.debug);
+        ConnectionThread RunningThread=new ConnectionThread();
+        RunningThread.run();
 
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,12 +245,44 @@ public class HomeActivity extends AppCompatActivity {
         btnDebug.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            if(RunningThread.flag=true){
+                RunningThread.flag=false;
 
-                Connect();
+            }
+            else{
+                RunningThread.flag=true;
+                RunningThread.run();
+            }
 
             }
         });
 
+    }
+
+    private class ConnectionThread extends Thread{
+
+        private Boolean flag=false;
+
+        @Override
+        public void run() {
+
+            try {
+                while(flag){
+                    mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
+                    enableBT();
+                    btnEnableDisable_Discoverable();
+                    btnDiscover();
+                    Thread.sleep(3600);
+                    Connect();
+                    Thread.sleep(30000);
+                }
+
+
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
