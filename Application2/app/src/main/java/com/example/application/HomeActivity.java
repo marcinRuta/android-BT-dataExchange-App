@@ -227,8 +227,7 @@ public class HomeActivity extends AppCompatActivity {
 
         Button btnCollect = (Button) findViewById(R.id.collect);
         Button btnDebug = (Button) findViewById(R.id.debug);
-        ConnectionThread RunningThread=new ConnectionThread();
-        RunningThread.run();
+
 
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -236,8 +235,9 @@ public class HomeActivity extends AppCompatActivity {
                 enableBT();
                 btnEnableDisable_Discoverable();
                 btnDiscover();
-               // Connect();
 
+                mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
+                Connect();
             }
 
         });
@@ -245,13 +245,18 @@ public class HomeActivity extends AppCompatActivity {
         btnDebug.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            if(RunningThread.flag=true){
+                Log.d(TAG,"klikniete debug");
+                ConnectionThread RunningThread=new ConnectionThread();
+            if(RunningThread.flag==true){
+                Log.d(TAG,"weszlo w ifa");
                 RunningThread.flag=false;
 
             }
             else{
+                Log.d(TAG,"klikniete else przed startem");
                 RunningThread.flag=true;
-                RunningThread.run();
+
+                RunningThread.start();
             }
 
             }
@@ -261,17 +266,19 @@ public class HomeActivity extends AppCompatActivity {
 
     private class ConnectionThread extends Thread{
 
-        private Boolean flag=false;
+        public Boolean flag=false;
 
         @Override
         public void run() {
-
+            Log.d(TAG,"wlaczone treda-przed tryem");
             try {
+                Log.d(TAG,"weszlo w trya");
                 while(flag){
                     mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
-                    enableBT();
+                   // enableBT();
                     btnEnableDisable_Discoverable();
                     btnDiscover();
+                    Log.d(TAG,"klikniete pu button dicosver");
                     Thread.sleep(3600);
                     Connect();
                     Thread.sleep(30000);
