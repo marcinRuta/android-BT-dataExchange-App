@@ -195,7 +195,7 @@ public class HomeActivity extends AppCompatActivity {
     public void Connect(){
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
 
-            mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
+
 
             for (int i = 0; i<mBTDevices.size(); i++){
                 Log.d(TAG, "Trying to pair with ");
@@ -216,6 +216,8 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -224,7 +226,7 @@ public class HomeActivity extends AppCompatActivity {
             Intent LogoutIntent = new Intent(HomeActivity.this, LoginActivity.class);
             startActivity(LogoutIntent);
         });
-
+        mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
         Button btnCollect = (Button) findViewById(R.id.collect);
         Button btnDebug = (Button) findViewById(R.id.debug);
 
