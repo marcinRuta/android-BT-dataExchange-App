@@ -51,7 +51,6 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                     case BluetoothAdapter.STATE_ON:
                         Log.d(TAG, "mBroadcastReceiver1: STATE ON");
-                        btnEnableDisable_Discoverable();
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:
                         Log.d(TAG, "mBroadcastReceiver1: STATE TURNING ON");
@@ -75,8 +74,6 @@ public class HomeActivity extends AppCompatActivity {
                     //Device is in Discoverable Mode
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
                         Log.d(TAG, "mBroadcastReceiver2: Discoverability Enabled.");
-                        btnDiscover();
-
                         break;
                     //Device not in discoverable mode
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
@@ -87,8 +84,6 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                     case BluetoothAdapter.STATE_CONNECTING:
                         Log.d(TAG, "mBroadcastReceiver2: Connecting....");
-                        btnDiscover();
-
                         break;
                     case BluetoothAdapter.STATE_CONNECTED:
                         Log.d(TAG, "mBroadcastReceiver2: Connected.");
@@ -109,7 +104,7 @@ public class HomeActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
                 mBTDevices.add(device);
                 Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
-                Connect(device);
+
             }
         }
     };
@@ -197,17 +192,25 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    public void Connect(BluetoothDevice mBTDevice){
+    public void Connect(){
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
 
             mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
-            mBTDevice.createBond();
-            startBTConnection(mBTDevice, MY_UUID_INSECURE);
 
+            for (int i = 0; i<mBTDevices.size(); i++){
+                Log.d(TAG, "Trying to pair with ");
+                mBTDevices.get(i).createBond();
+
+                mBTDevice = mBTDevices.get(i);
+
+                startBTConnection(mBTDevices.get(i),MY_UUID_INSECURE);
+
+
+        }
         }
     }
 
-
+   // ArrayList<BluetoothDevice> odkryteTelefony = new ArrayList<>();
 
 
 
@@ -234,6 +237,7 @@ public class HomeActivity extends AppCompatActivity {
                 btnDiscover();
 
                 mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
+                Connect();
             }
 
         });
@@ -242,15 +246,51 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"klikniete debug");
-                    enableBT();
+                ConnectionThread RunningThread=new ConnectionThread();
+            if(RunningThread.flag==true){
+                Log.d(TAG,"weszlo w ifa");
+                RunningThread.flag=false;
 
+            }
+            else{
+                Log.d(TAG,"klikniete else przed startem");
+                RunningThread.flag=true;
+
+                RunningThread.start();
+            }
 
             }
         });
 
     }
 
+    private class ConnectionThread extends Thread{
 
+        public Boolean flag=false;
+
+        @Override
+        public void run() {
+            Log.d(TAG,"wlaczone treda-przed tryem");
+            try {
+                Log.d(TAG,"weszlo w trya");
+                while(flag){
+                    mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
+                   // enableBT();
+                    btnEnableDisable_Discoverable();
+                    btnDiscover();
+                    Log.d(TAG,"klikniete pu button dicosver");
+                    Thread.sleep(3600);
+                    Connect();
+                    Thread.sleep(30000);
+                }
+
+
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
 
