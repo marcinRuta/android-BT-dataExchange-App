@@ -6,12 +6,19 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothConnectionService {
@@ -216,11 +223,33 @@ public class BluetoothConnectionService {
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "InputStream: " + incomingMessage);
+                    DataExchange informationRecevied= new Gson().fromJson(incomingMessage, DataExchange.class);
+                    File file = new File(Environment.getExternalStorageDirectory(), "text");
+                    if (!file.exists()) {
+                        file.mkdir();
+                    }
+                    try {
+                        String fileName="";
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+                        Date date = new Date();
+                        fileName= formatter.format(date);
+                        File txtfile = new File(file, fileName);
+                        FileWriter writer = new FileWriter(txtfile);
+                        writer.append(incomingMessage);
+                        writer.flush();
+                        writer.close();
+                        //   Toast.makeText(this, "Saved your text", Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                    }
+
                 } catch (IOException e) {
-                    Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
-                    mState=STATE_NONE;
+                    Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage());
+                    mState = STATE_NONE;
                     break;
                 }
+
+
+
             }
         }
 

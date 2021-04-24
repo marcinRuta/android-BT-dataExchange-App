@@ -16,6 +16,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -31,6 +33,8 @@ public class HomeActivity extends AppCompatActivity {
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     ConnectionListnerThread mConnectionListenerThread;
+    private String mAssignedID="b3e98320-a4f5-11eb-aa15-174bc8821ae7";
+    private int mRSSI=0;
 
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -107,6 +111,7 @@ public class HomeActivity extends AppCompatActivity {
 
             if (action.equals(BluetoothDevice.ACTION_FOUND)){
                 BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
+                mRSSI =intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
                 mBTDevices.add(device);
                 Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
                 Connect(device);
@@ -261,8 +266,11 @@ private class ConnectionListnerThread extends Thread{
     public void run() {
         while(true){
             if(mBluetoothConnection.mState==3){
-                String witam="testowy";
-                byte[] test = witam.getBytes();
+
+                DataExchange informationToSend=new DataExchange(mAssignedID,Build.MODEL,mRSSI);
+                String jsonToSend=(new Gson().toJson(informationToSend));
+
+                byte[] test = jsonToSend.getBytes();
                 mBluetoothConnection.write(test);
                         break;
             }
