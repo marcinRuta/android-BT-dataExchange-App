@@ -28,12 +28,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class BluetoothConnectionService {
 
     private static final String TAG = "BluetoothConnectionServ";
-
     private static final String appName = "MYAPP";
-
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
-    //"8ce255c0-200a-11e0-ac64-0800200c9a66"
+
 
     private final BluetoothAdapter mBluetoothAdapter;
     Context mContext;
@@ -57,14 +55,10 @@ public class BluetoothConnectionService {
     }
 
     private class AcceptThread extends Thread {
-
-        // The local server socket
         private final BluetoothServerSocket mmServerSocket;
-
         public AcceptThread(){
             BluetoothServerSocket tmp = null;
 
-            // Create a new listening server socket
             try{
                 tmp = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(appName, MY_UUID_INSECURE);
 
@@ -82,19 +76,14 @@ public class BluetoothConnectionService {
             BluetoothSocket socket = null;
 
             try{
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
                 Log.d(TAG, "run: RFCOM server socket start.....");
-
                 socket = mmServerSocket.accept();
-
                 Log.d(TAG, "run: RFCOM server socket accepted connection.");
 
             }catch (IOException e){
                 Log.e(TAG, "AcceptThread: IOException: " + e.getMessage() );
             }
 
-            //talk about this is in the 3rd
             if(socket != null){
                 connected(socket,mmDevice);
             }
@@ -116,10 +105,6 @@ public class BluetoothConnectionService {
     public void startClient(BluetoothDevice device,UUID uuid){
         Log.d(TAG, "startClient: Started.");
 
-        //initprogress dialog
-        mProgressDialog = ProgressDialog.show(mContext,"Connecting Bluetooth"
-                ,"Please Wait...",true);
-
         mConnectThread = new ConnectThread(device, uuid);
         mConnectThread.start();
     }
@@ -137,8 +122,7 @@ public class BluetoothConnectionService {
             BluetoothSocket tmp = null;
             Log.i(TAG, "RUN mConnectThread ");
 
-            // Get a BluetoothSocket for a connection with the
-            // given BluetoothDevice
+
             try {
                 Log.d(TAG, "ConnectThread: Trying to create InsecureRfcommSocket using UUID: "
                         +MY_UUID_INSECURE );
@@ -148,17 +132,10 @@ public class BluetoothConnectionService {
             }
 
             mmSocket = tmp;
-
-            // Always cancel discovery because it will slow down a connection
             mBluetoothAdapter.cancelDiscovery();
 
-            // Make a connection to the BluetoothSocket
-
             try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
                 mmSocket.connect();
-
                 Log.d(TAG, "run: ConnectThread connected.");
             } catch (IOException e) {
                 // Close the socket
@@ -170,8 +147,6 @@ public class BluetoothConnectionService {
                 }
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
             }
-
-            //will talk about this in the 3rd video
             connected(mmSocket,mmDevice);
         }
         public void cancel() {
@@ -179,7 +154,7 @@ public class BluetoothConnectionService {
                 Log.d(TAG, "cancel: Closing Client Socket.");
                 mmSocket.close();
             } catch (IOException e) {
-                Log.e(TAG, "cancel: close() of mmSocket in Connectthread failed. " + e.getMessage());
+                Log.e(TAG, "cancel: close() of mmSocket in ConnectThread failed. " + e.getMessage());
             }
         }
     }
@@ -216,28 +191,18 @@ public class BluetoothConnectionService {
         }
 
         public void run(){
-            byte[] buffer = new byte[1024];  // buffer store for the stream
+            byte[] buffer = new byte[1024];
             mState=STATE_CONNECTED;
-            int bytes; // bytes returned from read()
+            int bytes;
 
-            // Keep listening to the InputStream until an exception occurs
             while (true) {
-                // Read from the InputStream
+
                 try {
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "InputStream: " + incomingMessage);
-                    String encryptionKeyString =  "thisisa128bitkey";
-
-                    byte[] encryptionKeyBytes = encryptionKeyString.getBytes();
-
-                    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                    SecretKey secretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
-                    cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-                    byte[] decryptedMessageBytes = cipher.doFinal(incomingMessage.getBytes());
-                    DataExchange informationRecevied= new Gson().fromJson(decryptedMessageBytes.toString(), DataExchange.class);
-                    Log.d(TAG, "InputStream: " +decryptedMessageBytes.toString());
+                    DataExchange informationRecevied= new Gson().fromJson(incomingMessage ,DataExchange.class);
+                    Log.d(TAG, "InputStream: " +incomingMessage);
                     File file = new File(mContext.getFilesDir(), "text");
                     if (!file.exists()) {
                         file.mkdir();
@@ -250,10 +215,9 @@ public class BluetoothConnectionService {
                         File txtfile = new File(file, fileName);
                         txtfile.createNewFile();
                         FileWriter writer = new FileWriter(txtfile);
-                        writer.append(decryptedMessageBytes.toString());
+                        writer.append(incomingMessage);
                         writer.flush();
                         writer.close();
-                        //   Toast.makeText(this, "Saved your text", Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                     }
 
@@ -263,15 +227,15 @@ public class BluetoothConnectionService {
                     break;
                 }
                 catch (Exception e){
-
+                    Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage());
+                    mState = STATE_NONE;
+                    break;
                 }
 
 
 
             }
         }
-
-        //Call this from the main activity to send data to the remote device
         public void write(byte[] bytes) {
             String text = new String(bytes, Charset.defaultCharset());
             Log.d(TAG, "write: Writing to outputstream: " + text);
@@ -282,7 +246,6 @@ public class BluetoothConnectionService {
             }
         }
 
-        /* Call this from the main activity to shutdown the connection */
         public void cancel() {
             try {
                 mmSocket.close();
@@ -294,7 +257,6 @@ public class BluetoothConnectionService {
     private void connected(BluetoothSocket mmSocket, BluetoothDevice mmDevice) {
         Log.d(TAG, "connected: Starting.");
 
-        // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(mmSocket);
         mConnectedThread.start();
     }
@@ -302,7 +264,6 @@ public class BluetoothConnectionService {
     public synchronized void start() {
         Log.d(TAG, "start");
 
-        // Cancel any thread attempting to make a connection
         if (mConnectThread != null) {
             mConnectThread.cancel();
             mConnectThread = null;
@@ -313,12 +274,7 @@ public class BluetoothConnectionService {
         }
     }
     public void write(byte[] out) {
-        // Create temporary object
-        ConnectedThread r;
-
-        // Synchronize a copy of the ConnectedThread
         Log.d(TAG, "write: Write Called.");
-        //perform the write
         mConnectedThread.write(out);
     }
 

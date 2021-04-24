@@ -27,11 +27,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private int mCount = 0;
     private static final String TAG = "HomeActivity";
-
     BluetoothAdapter mBluetoothAdapter;
-    BluetoothDevice mBTDevice;
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
     BluetoothConnectionService mBluetoothConnection;
     private static final UUID MY_UUID_INSECURE =
@@ -41,11 +38,11 @@ public class HomeActivity extends AppCompatActivity {
     private int mRSSI=0;
 
 
-    // Create a BroadcastReceiver for ACTION_FOUND
+
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            // When discovery finds a device
+
             if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
 
@@ -80,13 +77,13 @@ public class HomeActivity extends AppCompatActivity {
                 int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.ERROR);
 
                 switch (mode) {
-                    //Device is in Discoverable Mode
+
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
                         Log.d(TAG, "mBroadcastReceiver2: Discoverability Enabled.");
                         btnDiscover();
 
                         break;
-                    //Device not in discoverable mode
+
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
                         Log.d(TAG, "mBroadcastReceiver2: Discoverability Disabled. Able to receive connections.");
                         break;
@@ -148,13 +145,19 @@ public class HomeActivity extends AppCompatActivity {
             registerReceiver(mBroadcastReceiver1, BTIntent);
 
         }
-//        if(mBluetoothAdapter.isEnabled()){
-//            Log.d(TAG, "enableDisableBT: disabling BT.");
-//            mBluetoothAdapter.disable();
-//
-//            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-//            registerReceiver(mBroadcastReceiver1, BTIntent);
-//        }
+        if(mBluetoothAdapter.isEnabled()){
+           Log.d(TAG, "enableDisableBT: disabling BT.");
+           mBluetoothAdapter.disable();
+           IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+           registerReceiver(mBroadcastReceiver1, BTIntent);
+
+            Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivity(enableBTIntent);
+
+            IntentFilter BTIntent2 = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            registerReceiver(mBroadcastReceiver1, BTIntent2);
+
+        }
 
     }
     public void btnEnableDisable_Discoverable() {
@@ -175,7 +178,7 @@ public class HomeActivity extends AppCompatActivity {
             permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
             if (permissionCheck != 0) {
 
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
+                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
             }
         }else{
             Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
@@ -187,7 +190,7 @@ public class HomeActivity extends AppCompatActivity {
 
         if(!mBluetoothAdapter.isDiscovering()){
             Log.d(TAG, "btnDiscover: sprawdzamy");
-            //check BT permissions in manifest
+
             checkBTPermissions();
 
             mBluetoothAdapter.startDiscovery();
@@ -198,7 +201,7 @@ public class HomeActivity extends AppCompatActivity {
             mBluetoothAdapter.cancelDiscovery();
             Log.d(TAG, "btnDiscover: Canceling discovery.");
 
-            //check BT permissions in manifest
+
             checkBTPermissions();
 
             mBluetoothAdapter.startDiscovery();
@@ -212,7 +215,7 @@ public class HomeActivity extends AppCompatActivity {
 
             mBTDevice.createBond();
             startBTConnection(mBTDevice, MY_UUID_INSECURE);
-            Log.d(TAG, "probuje sie polaczyc z: " + mBTDevice.getName());
+            Log.d(TAG, "Try: " + mBTDevice.getName());
         }
     }
 
@@ -238,11 +241,7 @@ public class HomeActivity extends AppCompatActivity {
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                enableBT();
-                btnEnableDisable_Discoverable();
-                btnDiscover();
 
-                mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
             }
 
         });
@@ -251,7 +250,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d(TAG,"klikniete debug");
+                Log.d(TAG,"Button Debug clicked");
                 enableBT();
                 mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
                 mConnectionListenerThread =new ConnectionListnerThread();
@@ -272,27 +271,9 @@ private class ConnectionListnerThread extends Thread{
             if(mBluetoothConnection.mState==3){
                 DataExchange informationToSend=new DataExchange(mAssignedID,Build.MODEL,mRSSI);
                 String jsonToSend=(new Gson().toJson(informationToSend));
-
                 byte[] bytesToSend = jsonToSend.getBytes();
-               // mBluetoothConnection.write(bytesToSend);
-
-                try {
-                    String encryptionKeyString =  "thisisa128bitkey";
-
-                    byte[] encryptionKeyBytes = encryptionKeyString.getBytes();
-
-                    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                    SecretKey secretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
-                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
-                    byte[] encryptedMessageBytes = cipher.doFinal(bytesToSend);
-                    mBluetoothConnection.write(encryptedMessageBytes);
-                }
-                catch (Exception e){
-
-                }
-
-                        break;
+                mBluetoothConnection.write(bytesToSend);
+                break;
             }
         }
     }
