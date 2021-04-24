@@ -21,6 +21,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 public class BluetoothConnectionService {
 
     private static final String TAG = "BluetoothConnectionServ";
@@ -223,8 +227,18 @@ public class BluetoothConnectionService {
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "InputStream: " + incomingMessage);
-                    DataExchange informationRecevied= new Gson().fromJson(incomingMessage, DataExchange.class);
-                    File file = new File(Environment.getExternalStorageDirectory(), "text");
+                    String encryptionKeyString =  "thisisa128bitkey";
+
+                    byte[] encryptionKeyBytes = encryptionKeyString.getBytes();
+
+                    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                    SecretKey secretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
+                    cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+                    byte[] decryptedMessageBytes = cipher.doFinal(incomingMessage.getBytes());
+                    DataExchange informationRecevied= new Gson().fromJson(decryptedMessageBytes.toString(), DataExchange.class);
+                    Log.d(TAG, "InputStream: " +decryptedMessageBytes.toString());
+                    File file = new File(mContext.getFilesDir(), "text");
                     if (!file.exists()) {
                         file.mkdir();
                     }
@@ -234,8 +248,9 @@ public class BluetoothConnectionService {
                         Date date = new Date();
                         fileName= formatter.format(date);
                         File txtfile = new File(file, fileName);
+                        txtfile.createNewFile();
                         FileWriter writer = new FileWriter(txtfile);
-                        writer.append(incomingMessage);
+                        writer.append(decryptedMessageBytes.toString());
                         writer.flush();
                         writer.close();
                         //   Toast.makeText(this, "Saved your text", Toast.LENGTH_LONG).show();
@@ -246,6 +261,9 @@ public class BluetoothConnectionService {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage());
                     mState = STATE_NONE;
                     break;
+                }
+                catch (Exception e){
+
                 }
 
 

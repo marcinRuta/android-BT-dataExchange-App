@@ -21,6 +21,10 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 public class HomeActivity extends AppCompatActivity {
 
     private int mCount = 0;
@@ -266,12 +270,28 @@ private class ConnectionListnerThread extends Thread{
     public void run() {
         while(true){
             if(mBluetoothConnection.mState==3){
-
                 DataExchange informationToSend=new DataExchange(mAssignedID,Build.MODEL,mRSSI);
                 String jsonToSend=(new Gson().toJson(informationToSend));
 
-                byte[] test = jsonToSend.getBytes();
-                mBluetoothConnection.write(test);
+                byte[] bytesToSend = jsonToSend.getBytes();
+               // mBluetoothConnection.write(bytesToSend);
+
+                try {
+                    String encryptionKeyString =  "thisisa128bitkey";
+
+                    byte[] encryptionKeyBytes = encryptionKeyString.getBytes();
+
+                    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                    SecretKey secretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+                    byte[] encryptedMessageBytes = cipher.doFinal(bytesToSend);
+                    mBluetoothConnection.write(encryptedMessageBytes);
+                }
+                catch (Exception e){
+
+                }
+
                         break;
             }
         }
