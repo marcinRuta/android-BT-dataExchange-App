@@ -3,7 +3,6 @@ package com.example.application;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -16,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -32,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
     BluetoothConnectionService mBluetoothConnection;
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+    ConnectionListnerThread mConnectionListenerThread;
 
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -246,13 +245,29 @@ public class HomeActivity extends AppCompatActivity {
                 Log.d(TAG,"klikniete debug");
                 enableBT();
                 mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
+                mConnectionListenerThread =new ConnectionListnerThread();
 
             }
         });
 
     }
 
+private class ConnectionListnerThread extends Thread{
+        ConnectionListnerThread(){
+            start();
+        }
 
 
+    public void run() {
+        while(true){
+            if(mBluetoothConnection.mState==3){
+                String witam="testowy";
+                byte[] test = witam.getBytes();
+                mBluetoothConnection.write(test);
+                        break;
+            }
+        }
+    }
+}
 }
 

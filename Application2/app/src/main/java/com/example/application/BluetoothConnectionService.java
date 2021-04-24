@@ -32,10 +32,16 @@ public class BluetoothConnectionService {
     ProgressDialog mProgressDialog;
     private ConnectedThread mConnectedThread;
     private AcceptThread mInsecureAcceptThread;
+    public int mState;
+    public static final int STATE_NONE = 0;
+    public static final int STATE_LISTEN = 1;
+    public static final int STATE_CONNECTING = 2;
+    public static final int STATE_CONNECTED = 3;
 
     public BluetoothConnectionService(Context context) {
         mContext = context;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mState=STATE_NONE;
 
     }
 
@@ -179,7 +185,7 @@ public class BluetoothConnectionService {
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
-            //dismiss the progressdialog when connection is established
+
             try{
                 mProgressDialog.dismiss();
             }catch (NullPointerException e){
@@ -200,7 +206,7 @@ public class BluetoothConnectionService {
 
         public void run(){
             byte[] buffer = new byte[1024];  // buffer store for the stream
-
+            mState=STATE_CONNECTED;
             int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
@@ -212,6 +218,7 @@ public class BluetoothConnectionService {
                     Log.d(TAG, "InputStream: " + incomingMessage);
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
+                    mState=STATE_NONE;
                     break;
                 }
             }
@@ -232,6 +239,7 @@ public class BluetoothConnectionService {
         public void cancel() {
             try {
                 mmSocket.close();
+                mState=STATE_NONE;
             } catch (IOException e) { }
         }
     }
@@ -257,4 +265,14 @@ public class BluetoothConnectionService {
             mInsecureAcceptThread.start();
         }
     }
+    public void write(byte[] out) {
+        // Create temporary object
+        ConnectedThread r;
+
+        // Synchronize a copy of the ConnectedThread
+        Log.d(TAG, "write: Write Called.");
+        //perform the write
+        mConnectedThread.write(out);
+    }
+
 }
