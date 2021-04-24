@@ -31,7 +31,7 @@ public class HomeActivity extends AppCompatActivity {
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
     BluetoothConnectionService mBluetoothConnection;
     private static final UUID MY_UUID_INSECURE =
-            UUID.randomUUID();
+            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -50,7 +50,9 @@ public class HomeActivity extends AppCompatActivity {
                         Log.d(TAG, "mBroadcastReceiver1: STATE TURNING OFF");
                         break;
                     case BluetoothAdapter.STATE_ON:
+                        mBluetoothConnection.start();
                         Log.d(TAG, "mBroadcastReceiver1: STATE ON");
+                        btnEnableDisable_Discoverable();
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:
                         Log.d(TAG, "mBroadcastReceiver1: STATE TURNING ON");
@@ -74,6 +76,8 @@ public class HomeActivity extends AppCompatActivity {
                     //Device is in Discoverable Mode
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
                         Log.d(TAG, "mBroadcastReceiver2: Discoverability Enabled.");
+                        btnDiscover();
+
                         break;
                     //Device not in discoverable mode
                     case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
@@ -84,6 +88,8 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                     case BluetoothAdapter.STATE_CONNECTING:
                         Log.d(TAG, "mBroadcastReceiver2: Connecting....");
+                        btnDiscover();
+
                         break;
                     case BluetoothAdapter.STATE_CONNECTED:
                         Log.d(TAG, "mBroadcastReceiver2: Connected.");
@@ -104,16 +110,16 @@ public class HomeActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
                 mBTDevices.add(device);
                 Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
-
+                Connect(device);
             }
         }
     };
 
 
     protected void onDestroy(){
-                Log.d(TAG, "onDestroy: called.");
-            super.onDestroy();
-            }
+        Log.d(TAG, "onDestroy: called.");
+        super.onDestroy();
+    }
 
     public void startBTConnection(BluetoothDevice device, UUID uuid){
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
@@ -132,6 +138,7 @@ public class HomeActivity extends AppCompatActivity {
 
             IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mBroadcastReceiver1, BTIntent);
+
         }
 //        if(mBluetoothAdapter.isEnabled()){
 //            Log.d(TAG, "enableDisableBT: disabling BT.");
@@ -170,8 +177,8 @@ public class HomeActivity extends AppCompatActivity {
     public void btnDiscover() {
         Log.d(TAG, "btnDiscover: Looking for unpaired devices.");
 
-              if(!mBluetoothAdapter.isDiscovering()){
-                  Log.d(TAG, "btnDiscover: sprawdzamy");
+        if(!mBluetoothAdapter.isDiscovering()){
+            Log.d(TAG, "btnDiscover: sprawdzamy");
             //check BT permissions in manifest
             checkBTPermissions();
 
@@ -192,25 +199,16 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    public void Connect(){
+    public void Connect(BluetoothDevice mBTDevice){
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
 
-            mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
-
-            for (int i = 0; i<mBTDevices.size(); i++){
-                Log.d(TAG, "Trying to pair with ");
-                mBTDevices.get(i).createBond();
-
-                mBTDevice = mBTDevices.get(i);
-
-                startBTConnection(mBTDevices.get(i),MY_UUID_INSECURE);
-
-
-        }
+            mBTDevice.createBond();
+            startBTConnection(mBTDevice, MY_UUID_INSECURE);
+            Log.d(TAG, "probuje sie polaczyc z: " + mBTDevice.getName());
         }
     }
 
-   // ArrayList<BluetoothDevice> odkryteTelefony = new ArrayList<>();
+
 
 
 
@@ -237,7 +235,6 @@ public class HomeActivity extends AppCompatActivity {
                 btnDiscover();
 
                 mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
-                Connect();
             }
 
         });
@@ -245,52 +242,17 @@ public class HomeActivity extends AppCompatActivity {
         btnDebug.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Log.d(TAG,"klikniete debug");
-                ConnectionThread RunningThread=new ConnectionThread();
-            if(RunningThread.flag==true){
-                Log.d(TAG,"weszlo w ifa");
-                RunningThread.flag=false;
-
-            }
-            else{
-                Log.d(TAG,"klikniete else przed startem");
-                RunningThread.flag=true;
-
-                RunningThread.start();
-            }
+                enableBT();
+                mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
 
             }
         });
 
     }
 
-    private class ConnectionThread extends Thread{
 
-        public Boolean flag=false;
-
-        @Override
-        public void run() {
-            Log.d(TAG,"wlaczone treda-przed tryem");
-            try {
-                Log.d(TAG,"weszlo w trya");
-                while(flag){
-                    mBTDevices.addAll(mBluetoothAdapter.getBondedDevices());
-                   // enableBT();
-                    btnEnableDisable_Discoverable();
-                    btnDiscover();
-                    Log.d(TAG,"klikniete pu button dicosver");
-                    Thread.sleep(3600);
-                    Connect();
-                    Thread.sleep(30000);
-                }
-
-
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 }
 
