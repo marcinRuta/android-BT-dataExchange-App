@@ -97,8 +97,7 @@
         android:layout_width="226dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:onClick="SendMessage"
-        android:text="@string/send"
+        android:text="SEND"
         app:backgroundTint="#096AB6"
         app:layout_constraintBottom_toTopOf="@+id/collect" />
     <LinearLayout
@@ -123,5 +122,5 @@
             android:text="@string/logout_here"
             android:textColor="#ffffff"
             android:textStyle="bold" />
-
+    </LinearLayout>
 </LinearLayout>
