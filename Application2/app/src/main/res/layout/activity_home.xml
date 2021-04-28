@@ -12,13 +12,13 @@
 
     <TextView
         android:id="@+id/last_sent"
-        android:layout_width="105dp"
-        android:layout_height="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="24dp"
         android:gravity="center"
         android:text="@string/last_sent"
-        android:textSize="30sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/last_sent_n"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -37,12 +37,12 @@
 
     <TextView
         android:id="@+id/sent_messages_count"
-        android:layout_width="202dp"
-        android:layout_height="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:gravity="center"
         android:text="@string/sent_messages_count"
-        android:textSize="30sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/msg_count_n"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -61,11 +61,11 @@
 
     <TextView
         android:id="@+id/received_messages_count"
-        android:layout_width="237dp"
-        android:layout_height="3dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:text="@string/received_messaged_count"
-        android:textSize="30sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/msg_rec_n"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -86,19 +86,7 @@
         android:layout_width="223dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-
         android:text="@string/debug"
-        app:backgroundTint="#673AB7"
-
-        />
-
-    <Button
-        android:id="@+id/collect"
-        android:layout_width="152dp"
-        android:layout_height="2dp"
-        android:layout_marginTop="40dp"
-
-        android:text="@string/collect"
         app:backgroundTint="#673AB7"
 
         />
@@ -106,39 +94,34 @@
 
     <Button
         android:id="@+id/send"
-        android:layout_width="149dp"
-        android:layout_height="17dp"
+        android:layout_width="226dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:onClick="SendMessage"
         android:text="@string/send"
         app:backgroundTint="#096AB6"
         app:layout_constraintBottom_toTopOf="@+id/collect" />
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="10dp">
-
         <TextView
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
             android:text="@string/you_done"
-            />
+            android:textColor="#ffffff" />
 
         <TextView
             android:id="@+id/textview_logout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
+            android:paddingStart="10dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:textStyle="bold"
             android:text="@string/logout_here"
-            android:paddingStart="10dp" />
-
-    </LinearLayout>
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
 
 </LinearLayout>

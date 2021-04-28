@@ -19,5 +19,5 @@
     <string name="log_out">Log out</string>
     <string name="you_done">If you are done,</string>
     <string name="logout_here">Log out here</string>
-    <string name="debug">Debug</string>
+    <string name="debug">Start</string>
 </resources>
