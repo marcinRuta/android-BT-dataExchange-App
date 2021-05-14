@@ -42,4 +42,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
+    void Login(String Username, String Password){
+    }
 }
