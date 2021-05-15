@@ -1,4 +1,4 @@
-package com.example.application;
+package com.example.application.DTO;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,7 +9,7 @@ public class DataExchange {
     public String Date;
     public int signalStrength;
 
-    DataExchange(String id, String DeviceModel, int Signal){
+    public DataExchange(String id, String DeviceModel, int Signal){
         ID=id;
         this.DeviceModel=DeviceModel;
         Date date = new Date();

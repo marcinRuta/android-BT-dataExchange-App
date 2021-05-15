@@ -6,9 +6,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
+import com.example.application.DTO.DataExchange;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -20,10 +20,6 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 public class BluetoothConnectionService {
 

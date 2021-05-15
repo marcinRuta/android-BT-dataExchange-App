@@ -15,15 +15,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.application.DTO.DataExchange;
+import com.example.application.DTO.LogResponse;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -36,6 +39,7 @@ public class HomeActivity extends AppCompatActivity {
     ConnectionListnerThread mConnectionListenerThread;
     private String mAssignedID="b3e98320-a4f5-11eb-aa15-174bc8821ae7";
     private int mRSSI=0;
+    APIInterface apiInterface;
 
 
 
@@ -219,6 +223,33 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    public void SendData(DataExchange dataExchange){
+
+        Call call = apiInterface.postMessage(dataExchange);
+        call.enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) { if(response.isSuccessful()){
+                LogResponse resObj = (LogResponse) response.body();
+                if(resObj.getMessage().equals("true")){
+
+                    Log.d(TAG, "Sent successfully" );
+
+                } else {
+                    Log.d(TAG, "Wrong file" );
+                }
+            } else {
+                Log.d(TAG, "Sent unsuccessfully" );
+            }
+
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+                Log.d(TAG, "Sent unsuccessfully" );
+            }
+        });
+    }
+
 
 
 
@@ -229,6 +260,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         TextView mTextViewLogout = (TextView) findViewById(R.id.textview_logout);
+        apiInterface = APIClient.getClient().create(APIInterface.class);
         mTextViewLogout.setOnClickListener(view -> {
             Intent LogoutIntent = new Intent(HomeActivity.this, LoginActivity.class);
             startActivity(LogoutIntent);
@@ -278,5 +310,7 @@ private class ConnectionListnerThread extends Thread{
         }
     }
 }
+
+
 }
 
