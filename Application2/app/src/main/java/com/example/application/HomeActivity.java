@@ -15,16 +15,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.application.DTO.DataExchange;
 import com.example.application.DTO.DataSent;
-import com.example.application.DTO.LogResponse;
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,7 +42,7 @@ public class HomeActivity extends AppCompatActivity {
     BluetoothConnectionService mBluetoothConnection;
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
-    ConnectionListnerThread mConnectionListenerThread;
+    ConnectionListenerThread mConnectionListenerThread;
     private String mAssignedID = "b3e98320-a4f5-11eb-aa15-174bc8821ae7";
     private int mRSSI = 0;
     APIInterface apiInterface;
@@ -229,19 +233,63 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private ArrayList<DataExchange> getData() {
+
+        File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+        File[] listOfFiles= folder.listFiles();
+
+
         ArrayList<DataExchange> list = new ArrayList<DataExchange>();
-        return list;
+
+        for(File file: listOfFiles){
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            BufferedReader in = null;
+            try {
+                in = new BufferedReader(new FileReader(file));
+                while ((line = in.readLine()) != null) stringBuilder.append(line);
+                in.close();
+
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, e.toString());
+            } catch (IOException e) {
+               Log.d(TAG, e.toString());
+            }
+            String readData=stringBuilder.toString();
+            DataExchange informationReceived= new Gson().fromJson(readData ,DataExchange.class);
+            list.add(informationReceived);
+
+
+        }
+
+            return list;
 
     }
 
     public void SendData(){
+        int i=0;
         for(DataExchange data: this.getData()){
-            this.SendDataApi(data);
+
+            File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+            File[] listOfFiles= folder.listFiles();
+            this.SendDataApi(data, listOfFiles[0]);
+            i++;
         }
 
     }
 
-    public void SendDataApi(DataExchange data) {
+    public int msgCount(){
+        File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+        File[] listOfFiles= folder.listFiles();
+        return listOfFiles.length;
+    }
+
+    public float msgWeight(){
+        File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+
+        return folder.getTotalSpace();
+    }
+
+    public void SendDataApi(DataExchange data, File file) {
 
         DataSent dataToSend = new DataSent(data.signalStrength, data.DeviceModel, data.ID, mAssignedID, data.Date);
 
@@ -254,10 +302,9 @@ public class HomeActivity extends AppCompatActivity {
                     String resObj = (String) response.body();
                     if (resObj == "błąd autoryzacji") {
                         Log.d(TAG, "Wrong authorization");
-
-
                     } else {
                         Log.d(TAG, "Messenge Sent");
+                        file.delete();
                     }
                 } else {
                     Log.d(TAG, "Sent unsuccessfully");
@@ -296,14 +343,14 @@ public class HomeActivity extends AppCompatActivity {
             mUsername = (String) bundle.get("username");
         }
 
-        Button btnCollect = (Button) findViewById(R.id.collect);
+        Button btnCollect = (Button) findViewById(R.id.send);
         Button btnDebug = (Button) findViewById(R.id.debug);
 
 
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                SendData();
             }
 
         });
@@ -315,15 +362,15 @@ public class HomeActivity extends AppCompatActivity {
                 Log.d(TAG, "Button Debug clicked");
                 enableBT();
                 mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
-                mConnectionListenerThread = new ConnectionListnerThread();
+                mConnectionListenerThread = new ConnectionListenerThread();
 
             }
         });
 
     }
 
-    private class ConnectionListnerThread extends Thread {
-        ConnectionListnerThread() {
+    private class ConnectionListenerThread extends Thread {
+        ConnectionListenerThread() {
             start();
         }
 
