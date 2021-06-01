@@ -18,10 +18,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.application.DTO.DataExchange;
+import com.example.application.DTO.DataSent;
 import com.example.application.DTO.LogResponse;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import retrofit2.Call;
@@ -37,10 +39,12 @@ public class HomeActivity extends AppCompatActivity {
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     ConnectionListnerThread mConnectionListenerThread;
-    private String mAssignedID="b3e98320-a4f5-11eb-aa15-174bc8821ae7";
-    private int mRSSI=0;
+    private String mAssignedID = "b3e98320-a4f5-11eb-aa15-174bc8821ae7";
+    private int mRSSI = 0;
     APIInterface apiInterface;
-
+    private Encryption mEncryptor;
+    private String mUsername = "Test";
+    private String mPassword = "Test";
 
 
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
@@ -50,7 +54,7 @@ public class HomeActivity extends AppCompatActivity {
             if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
 
-                switch(state){
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                         Log.d(TAG, "onReceive: STATE OFF");
                         break;
@@ -114,9 +118,9 @@ public class HomeActivity extends AppCompatActivity {
             final String action = intent.getAction();
             Log.d(TAG, "onReceive: ACTION FOUND.");
 
-            if (action.equals(BluetoothDevice.ACTION_FOUND)){
-                BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
-                mRSSI =intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
+            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                mRSSI = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 mBTDevices.add(device);
                 Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
                 Connect(device);
@@ -125,22 +129,22 @@ public class HomeActivity extends AppCompatActivity {
     };
 
 
-    protected void onDestroy(){
+    protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
         super.onDestroy();
     }
 
-    public void startBTConnection(BluetoothDevice device, UUID uuid){
+    public void startBTConnection(BluetoothDevice device, UUID uuid) {
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
 
-        mBluetoothConnection.startClient(device,uuid);
+        mBluetoothConnection.startClient(device, uuid);
     }
 
-    public void enableBT(){
-        if(mBluetoothAdapter == null){
+    public void enableBT() {
+        if (mBluetoothAdapter == null) {
             Log.d(TAG, "enableBT: Does not have BT capabilities.");
         }
-        if(!mBluetoothAdapter.isEnabled()){
+        if (!mBluetoothAdapter.isEnabled()) {
             Log.d(TAG, "enableBT: enabling BT.");
             Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBTIntent);
@@ -149,11 +153,11 @@ public class HomeActivity extends AppCompatActivity {
             registerReceiver(mBroadcastReceiver1, BTIntent);
 
         }
-        if(mBluetoothAdapter.isEnabled()){
-           Log.d(TAG, "enableDisableBT: disabling BT.");
-           mBluetoothAdapter.disable();
-           IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-           registerReceiver(mBroadcastReceiver1, BTIntent);
+        if (mBluetoothAdapter.isEnabled()) {
+            Log.d(TAG, "enableDisableBT: disabling BT.");
+            mBluetoothAdapter.disable();
+            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            registerReceiver(mBroadcastReceiver1, BTIntent);
 
             Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBTIntent);
@@ -164,6 +168,7 @@ public class HomeActivity extends AppCompatActivity {
         }
 
     }
+
     public void btnEnableDisable_Discoverable() {
         Log.d(TAG, "btnEnableDisable_Discoverable: Making device discoverable for 300 seconds.");
 
@@ -172,19 +177,19 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(discoverableIntent);
 
         IntentFilter intentFilter = new IntentFilter(mBluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        registerReceiver(mBroadcastReceiver2,intentFilter);
+        registerReceiver(mBroadcastReceiver2, intentFilter);
 
     }
 
     private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
             permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
             if (permissionCheck != 0) {
 
                 this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
             }
-        }else{
+        } else {
             Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
         }
     }
@@ -192,7 +197,7 @@ public class HomeActivity extends AppCompatActivity {
     public void btnDiscover() {
         Log.d(TAG, "btnDiscover: Looking for unpaired devices.");
 
-        if(!mBluetoothAdapter.isDiscovering()){
+        if (!mBluetoothAdapter.isDiscovering()) {
             Log.d(TAG, "btnDiscover: sprawdzamy");
 
             checkBTPermissions();
@@ -201,7 +206,7 @@ public class HomeActivity extends AppCompatActivity {
             IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
         }
-        if(mBluetoothAdapter.isDiscovering()){
+        if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
             Log.d(TAG, "btnDiscover: Canceling discovery.");
 
@@ -214,8 +219,8 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    public void Connect(BluetoothDevice mBTDevice){
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
+    public void Connect(BluetoothDevice mBTDevice) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
 
             mBTDevice.createBond();
             startBTConnection(mBTDevice, MY_UUID_INSECURE);
@@ -223,35 +228,51 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    public void SendData(DataExchange dataExchange){
+    private ArrayList<DataExchange> getData() {
+        ArrayList<DataExchange> list = new ArrayList<DataExchange>();
+        return list;
 
-        Call call = apiInterface.postMessage(dataExchange);
+    }
+
+    public void SendData(){
+        for(DataExchange data: this.getData()){
+            this.SendDataApi(data);
+        }
+
+    }
+
+    public void SendDataApi(DataExchange data) {
+
+        DataSent dataToSend = new DataSent(data.signalStrength, data.DeviceModel, data.ID, mAssignedID, data.Date);
+
+
+        Call call = apiInterface.postMessage(dataToSend, mUsername, mPassword);
         call.enqueue(new Callback() {
             @Override
-            public void onResponse(Call call, Response response) { if(response.isSuccessful()){
-                LogResponse resObj = (LogResponse) response.body();
-                if(resObj.getMessage().equals("true")){
+            public void onResponse(Call call, Response response) {
+                if (response.isSuccessful()) {
+                    String resObj = (String) response.body();
+                    if (resObj == "błąd autoryzacji") {
+                        Log.d(TAG, "Wrong authorization");
 
-                    Log.d(TAG, "Sent successfully" );
 
+                    } else {
+                        Log.d(TAG, "Messenge Sent");
+                    }
                 } else {
-                    Log.d(TAG, "Wrong file" );
+                    Log.d(TAG, "Sent unsuccessfully");
                 }
-            } else {
-                Log.d(TAG, "Sent unsuccessfully" );
-            }
 
             }
 
             @Override
             public void onFailure(Call call, Throwable t) {
-                Log.d(TAG, "Sent unsuccessfully" );
+                Log.d(TAG, "Sent unsuccessfully");
             }
         });
+
+
     }
-
-
-
 
 
     @Override
@@ -259,12 +280,21 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mEncryptor = new Encryption();
         TextView mTextViewLogout = (TextView) findViewById(R.id.textview_logout);
         apiInterface = APIClient.getClient().create(APIInterface.class);
         mTextViewLogout.setOnClickListener(view -> {
             Intent LogoutIntent = new Intent(HomeActivity.this, LoginActivity.class);
             startActivity(LogoutIntent);
         });
+
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            mAssignedID = (String) bundle.get("ID");
+            mPassword = (String) bundle.get("password");
+            mUsername = (String) bundle.get("username");
+        }
 
         Button btnCollect = (Button) findViewById(R.id.collect);
         Button btnDebug = (Button) findViewById(R.id.debug);
@@ -282,34 +312,34 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d(TAG,"Button Debug clicked");
+                Log.d(TAG, "Button Debug clicked");
                 enableBT();
                 mBluetoothConnection = new BluetoothConnectionService(HomeActivity.this);
-                mConnectionListenerThread =new ConnectionListnerThread();
+                mConnectionListenerThread = new ConnectionListnerThread();
 
             }
         });
 
     }
 
-private class ConnectionListnerThread extends Thread{
-        ConnectionListnerThread(){
+    private class ConnectionListnerThread extends Thread {
+        ConnectionListnerThread() {
             start();
         }
 
 
-    public void run() {
-        while(true){
-            if(mBluetoothConnection.mState==3){
-                DataExchange informationToSend=new DataExchange(mAssignedID,Build.MODEL,mRSSI);
-                String jsonToSend=(new Gson().toJson(informationToSend));
-                byte[] bytesToSend = jsonToSend.getBytes();
-                mBluetoothConnection.write(bytesToSend);
-                break;
+        public void run() {
+            while (true) {
+                if (mBluetoothConnection.mState == 3) {
+                    DataExchange informationToSend = new DataExchange(mAssignedID, mEncryptor.encrypt(Build.MODEL), mEncryptor.encrypt(Integer.toString(mRSSI)));
+                    String jsonToSend = (new Gson().toJson(informationToSend));
+                    byte[] bytesToSend = jsonToSend.getBytes();
+                    mBluetoothConnection.write(bytesToSend);
+                    break;
+                }
             }
         }
     }
-}
 
 
 }

@@ -1,7 +1,6 @@
 package com.example.application;
 
 import android.content.Intent;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +15,7 @@ import retrofit2.Response;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.application.DTO.LogResponse;
-import com.example.application.DTO.User;
+import com.example.application.DTO.LogData;
 
 public class LoginActivity extends AppCompatActivity {
     EditText mTextUsername;
@@ -25,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     TextView mTextViewRegister;
     String Tag ="loginActivity";
     APIInterface apiInterface;
+    Encryption mEncryptor=new Encryption();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +40,10 @@ public class LoginActivity extends AppCompatActivity {
 
                 String username = mTextUsername.getText().toString();
                 String password = mTextPassword.getText().toString();
-                //if(!validateLogin(username, password)){
+                /*if(!validateLogin(username, password)){
                     //do login
                    // doLogin(username, password);
-               // }
+                }*/
 
 
 
@@ -76,22 +76,28 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void doLogin(final String username,final String password){
-        User log=new User(username,password);
+        LogData log=new LogData(mEncryptor.encrypt(username),mEncryptor.encrypt(password));
 
         Call call = apiInterface.logUser(log);
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
                 if(response.isSuccessful()){
-                    LogResponse resObj = (LogResponse) response.body();
-                    if(resObj.getMessage().equals("true")){
+                    String resObj = (String) response.body();
 
-                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                        intent.putExtra("ID", resObj.getID());
-                        startActivity(intent);
+
+                    if(resObj=="Nie ma takiego użytownika!"){
+
+                        Toast.makeText(LoginActivity.this, "The username or password is incorrect", Toast.LENGTH_SHORT).show();
 
                     } else {
-                        Toast.makeText(LoginActivity.this, "The username or password is incorrect", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                        intent.putExtra("ID", resObj);
+                        intent.putExtra("username",log.Nazwa);
+                        intent.putExtra("password",log.Haslo);
+                        startActivity(intent);
+
                     }
                 } else {
                     Toast.makeText(LoginActivity.this, "Error! Please try again!", Toast.LENGTH_SHORT).show();
