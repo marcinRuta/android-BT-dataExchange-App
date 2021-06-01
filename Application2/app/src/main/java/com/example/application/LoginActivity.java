@@ -40,16 +40,16 @@ public class LoginActivity extends AppCompatActivity {
 
                 String username = mTextUsername.getText().toString();
                 String password = mTextPassword.getText().toString();
-                /*if(!validateLogin(username, password)){
-                    //do login
-                   // doLogin(username, password);
-                }*/
+                if(validateLogin(username, password)){
+
+                    doLogin(username, password);
+                }
 
 
 
-                Intent homeIntent = new Intent (LoginActivity.this, HomeActivity.class);
-                startActivity(homeIntent);
-                Log.d(Tag,"zalogowano");
+                /*Intent homeIntent = new Intent (LoginActivity.this, HomeActivity.class);
+                startActivity(homeIntent);*/
+
 
             }
         });
@@ -66,12 +66,16 @@ public class LoginActivity extends AppCompatActivity {
     private boolean validateLogin(String username, String password){
         if(username == null || username.trim().length() == 0){
             Toast.makeText(this, "Username is required", Toast.LENGTH_SHORT).show();
+
             return false;
+
         }
         if(password == null || password.trim().length() == 0){
             Toast.makeText(this, "Password is required", Toast.LENGTH_SHORT).show();
+
             return false;
         }
+
         return true;
     }
 
@@ -79,21 +83,23 @@ public class LoginActivity extends AppCompatActivity {
         LogData log=new LogData(mEncryptor.encrypt(username),mEncryptor.encrypt(password));
 
         Call call = apiInterface.logUser(log);
+
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
+                Log.d(Tag,"zalogowano api");
                 if(response.isSuccessful()){
-                    String resObj = (String) response.body();
+                    LogResponse resObj = (LogResponse) response.body();
+                    Log.d(Tag,"zalogowano api");
 
-
-                    if(resObj=="Nie ma takiego użytownika!"){
+                    if(resObj.getResp().equals("Nie ma takiego użytownika!")){
 
                         Toast.makeText(LoginActivity.this, "The username or password is incorrect", Toast.LENGTH_SHORT).show();
 
                     } else {
-
+                        Log.d(Tag,"zalogowano api");
                         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                        intent.putExtra("ID", resObj);
+                        intent.putExtra("ID", resObj.getResp());
                         intent.putExtra("username",log.Nazwa);
                         intent.putExtra("password",log.Haslo);
                         startActivity(intent);
@@ -101,6 +107,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } else {
                     Toast.makeText(LoginActivity.this, "Error! Please try again!", Toast.LENGTH_SHORT).show();
+                    Log.d(Tag,"zalogowano api");
                 }
             }
 

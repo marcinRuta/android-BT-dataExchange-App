@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.application.DTO.DataExchange;
 import com.example.application.DTO.DataSent;
+import com.example.application.DTO.LogResponse;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -299,8 +300,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                    String resObj = (String) response.body();
-                    if (resObj == "błąd autoryzacji") {
+                    LogResponse resObj = (LogResponse) response.body();
+
+                    if (resObj.getResp().equals("błąd autoryzacji")) {
                         Log.d(TAG, "Wrong authorization");
                     } else {
                         Log.d(TAG, "Messenge Sent");
