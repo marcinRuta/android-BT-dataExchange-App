@@ -36,6 +36,11 @@ import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity {
 
+    TextView msgCount;
+    TextView msgWeight;
+    private int IntMsgCount;
+    private float FloatMsgWeight;
+
     private static final String TAG = "HomeActivity";
     BluetoothAdapter mBluetoothAdapter;
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
@@ -49,6 +54,7 @@ public class HomeActivity extends AppCompatActivity {
     private Encryption mEncryptor;
     private String mUsername = "Test";
     private String mPassword = "Test";
+
 
 
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
@@ -342,6 +348,22 @@ public class HomeActivity extends AppCompatActivity {
             mPassword = (String) bundle.get("password");
             mUsername = (String) bundle.get("username");
         }
+
+        TextView msgCount = (TextView) findViewById(R.id.msg_count);
+        msgCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                msgCount.setText(IntMsgCount = msgCount());
+            }
+        });
+
+        TextView msgWeight = (TextView) findViewById(R.id.msg_weight);
+        msgWeight.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   FloatMsgWeight = msgWeight();
+                }
+        });
 
         Button btnCollect = (Button) findViewById(R.id.send);
         Button btnDebug = (Button) findViewById(R.id.debug);

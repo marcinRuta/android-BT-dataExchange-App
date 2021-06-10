@@ -9,25 +9,21 @@
     android:orientation="vertical"
     tools:context=".HomeActivity">
 
-
-
-
-
-
     <TextView
         android:id="@+id/sent_messages_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
+        android:layout_marginTop="70dp"
         android:gravity="center"
-        android:text="@string/sent_messages_count"
+        android:text="@string/received_messages_count"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/msg_count_n"
+        app:layout_constraintBottom_toTopOf="@+id/msg_count"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/msg_count_n"
+        android:id="@id/msg_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
@@ -39,26 +35,29 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/received_messages_count"
+        android:id="@+id/sent_messages_weight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:text="@string/received_messaged_count"
+        android:gravity="center"
+        android:text="@string/received_messages_weight"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/msg_rec_n"
+        app:layout_constraintBottom_toTopOf="@+id/msg_count_n"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/msg_rec_n"
+        android:id="@+id/msg_weight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:text="@string/rec_n"
+        android:text="@string/send_message_n"
         android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/send"
+        app:layout_constraintBottom_toTopOf="@+id/received_messages_count"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
     <Button
         android:id="@+id/debug"

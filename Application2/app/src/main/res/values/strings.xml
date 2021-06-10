@@ -20,4 +20,7 @@
     <string name="you_done">If you are done,</string>
     <string name="logout_here">Log out here</string>
     <string name="debug">Start</string>
+    <string name="sent_messages_weight">Sent messages weight</string>
+    <string name="received_messages_weight">Received messages weight</string>
+    <string name="received_messages_count">Received messages count</string>
 </resources>
