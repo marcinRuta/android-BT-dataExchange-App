@@ -1,31 +1,18 @@
 package com.example.application.DTO;
 
 public class LogResponse {
-    private String message;
-    private int ID;
+    private String resp;
 
-    public LogResponse(String messege) {
-        this.message = messege;
+
+    public LogResponse(String resp) {
+        resp = resp;
     }
 
-    public LogResponse(int ID) {
-        this.ID = ID;
+    public String getResp() {
+        return resp;
     }
 
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String messge) {
-        this.message = message;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setResp(String resp) {
+        resp = resp;
     }
 }

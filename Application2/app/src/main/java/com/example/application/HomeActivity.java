@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.application.DTO.DataExchange;
 import com.example.application.DTO.DataSent;
+import com.example.application.DTO.LogResponse;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -25,8 +26,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -273,12 +277,47 @@ public class HomeActivity extends AppCompatActivity {
 
     public void SendData(){
         int i=0;
+
+        File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+        File[] listOfFiles= folder.listFiles();
+        Log.d(TAG,String.valueOf(listOfFiles.length));
+
         for(DataExchange data: this.getData()){
 
-            File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
-            File[] listOfFiles= folder.listFiles();
-            this.SendDataApi(data, listOfFiles[0]);
+
+            Log.d(TAG,String.valueOf(listOfFiles.length));
+            Log.d(TAG,listOfFiles[i].getName());
+            this.SendDataApi(data, listOfFiles[i]);
             i++;
+        }
+
+    }
+    public void createTestFiles(){
+      int i=0;
+        File file = new File(HomeActivity.this.getFilesDir(), "text");
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        while( i<10){
+            DataExchange dumpData=new DataExchange(mAssignedID, mEncryptor.encrypt(Build.MODEL), mEncryptor.encrypt(Integer.toString(mRSSI)));
+            String incomingMessage= (new Gson().toJson(dumpData));
+            i++;
+            try {
+                String fileName = "";
+                SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+                Date date = new Date();
+                fileName = formatter.format(date);
+                File txtfile = new File(file, fileName);
+                txtfile.createNewFile();
+                FileWriter writer = new FileWriter(txtfile);
+                writer.append(incomingMessage);
+                writer.flush();
+                writer.close();
+
+            } catch (Exception e){
+
+            }
+
         }
 
     }
@@ -305,8 +344,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                    String resObj = (String) response.body();
-                    if (resObj == "błąd autoryzacji") {
+                    LogResponse resObj = (LogResponse) response.body();
+
+                    if (resObj.getResp().equals("błąd autoryzacji")) {
                         Log.d(TAG, "Wrong authorization");
                     } else {
                         Log.d(TAG, "Messenge Sent");
@@ -372,7 +412,9 @@ public class HomeActivity extends AppCompatActivity {
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*createTestFiles();*/
                 SendData();
+
             }
 
         });

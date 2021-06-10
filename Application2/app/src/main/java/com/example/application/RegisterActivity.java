@@ -6,7 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +32,8 @@ public class RegisterActivity extends AppCompatActivity {
     Button mButtonRegister;
     TextView mTextViewLogin;
     APIInterface apiInterface;
+    String Tag ="registerctivity";
+    Encryption mEncryptor=new Encryption();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +61,7 @@ public class RegisterActivity extends AppCompatActivity {
                 String pwd = mTextPassword.getText().toString().trim();
                 String cnf_pwd = mTextCnfPassword.getText().toString().trim();
 
-                if(!validateRegister(user, pwd, cnf_pwd)){
+                if(validateRegister(user, pwd, cnf_pwd)){
 
                  doRegister(user, pwd);
                  }
@@ -77,7 +82,7 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Confirmed password is required", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (cnfpassword.trim() != password.trim()) {
+        if (!cnfpassword.trim().equals(password.trim())) {
             Toast.makeText(this, "Confirmed password and password are not the same", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -85,24 +90,27 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void doRegister(final String username, final String password) {
-        WifiManager manager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = manager.getConnectionInfo();
-        String address = info.getMacAddress();
-        RegData register = new RegData(username, password, address);
+
+        String address = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        RegData register = new RegData(mEncryptor.encrypt(username),mEncryptor.encrypt(password), mEncryptor.encrypt(address));
 
         Call call = apiInterface.registerUser(register);
+
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
+                Log.d(Tag,"wysłano i okej"+response.code());
+
                 if (response.isSuccessful()) {
 
 
-                    String resObj = (String) response.body();
-                    switch (resObj) {
+                    LogResponse resObj = (LogResponse) response.body();
+
+                    switch (resObj.getResp()) {
                         case ("Udało się zarejestrować!"):
                             Toast.makeText(RegisterActivity.this, "U have registered correctly", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                            startActivity(intent);
+                            //Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            //startActivity(intent);
                             break;
                         case ("Użytkownik tego urządzenia posiada już konto!"):
                             Toast.makeText(RegisterActivity.this, "That device is already registered", Toast.LENGTH_SHORT).show();
@@ -113,6 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
 
                 } else {
+                    Log.d(Tag,"wyjebało sie");
                     Toast.makeText(RegisterActivity.this, "Error! Please try again!", Toast.LENGTH_SHORT).show();
                 }
             }
