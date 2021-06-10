@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,10 +42,8 @@ import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity {
 
-    TextView msgCount;
-    TextView msgWeight;
-    private int IntMsgCount;
-    private float FloatMsgWeight;
+
+
 
     private static final String TAG = "HomeActivity";
     BluetoothAdapter mBluetoothAdapter;
@@ -52,6 +52,7 @@ public class HomeActivity extends AppCompatActivity {
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     ConnectionListenerThread mConnectionListenerThread;
+
     private String mAssignedID = "b3e98320-a4f5-11eb-aa15-174bc8821ae7";
     private int mRSSI = 0;
     APIInterface apiInterface;
@@ -322,16 +323,33 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    public int msgCount(){
+    public  int msgCount(){
         File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+
+
         File[] listOfFiles= folder.listFiles();
         return listOfFiles.length;
     }
 
-    public float msgWeight(){
-        File folder= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+    public String msgWeight(){
+        File dir= new File(HomeActivity.this.getFilesDir().getAbsolutePath()+"/text");
+        long result = 0;
+        if (dir.exists()) {
 
-        return folder.getTotalSpace();
+            File[] fileList = dir.listFiles();
+            if (fileList != null) {
+                for(int i = 0; i < fileList.length; i++) {
+                    // Recursive call if it's a director
+                        result += fileList[i].length();
+
+                }
+            }
+
+        }
+
+
+
+        return String.valueOf(result/1024)+"kb";
     }
 
     public void SendDataApi(DataExchange data, File file) {
@@ -393,16 +411,16 @@ public class HomeActivity extends AppCompatActivity {
         msgCount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                msgCount.setText(IntMsgCount = msgCount());
+                msgCount.setText(String.valueOf(msgCount()));
             }
         });
 
         TextView msgWeight = (TextView) findViewById(R.id.msg_weight);
         msgWeight.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   FloatMsgWeight = msgWeight();
-                }
+            @Override
+            public void onClick(View v) {
+                msgWeight.setText(String.valueOf(msgWeight()));
+            }
         });
 
         Button btnCollect = (Button) findViewById(R.id.send);
@@ -412,12 +430,13 @@ public class HomeActivity extends AppCompatActivity {
         btnCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*createTestFiles();*/
+                createTestFiles();
                 SendData();
 
             }
 
         });
+
 
         btnDebug.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -451,6 +470,8 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
 
 }
